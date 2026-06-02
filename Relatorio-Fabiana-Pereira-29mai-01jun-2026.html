@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório de Performance | Fabiana Pereira | 29 mai – 01 jun 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    /* Paleta cicatrizinvisivel.com */
+    --navy:         #0c1a32;
+    --navy-deep:    #081428;
+    --navy-mid:     #122545;
+    --navy-card:    #142a4e;
+    --navy-elev:    #1a325b;
+    --navy-border:  #1f3a68;
+
+    --cream:        #ede2cd;
+    --cream-soft:   #e3d5b8;
+    --cream-deep:   #d4c4a0;
+
+    --gold:         #c9a85c;
+    --gold-bright:  #e0bf72;
+    --gold-soft:    #a88940;
+    --gold-glow:    rgba(201, 168, 92, 0.15);
+
+    --ink:          #0a1525;
+    --ink-soft:     #2a3852;
+    --muted:        #8a96aa;
+    --muted-cream:  #8c8068;
+
+    --bad:          #c97f7f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background:
+      radial-gradient(ellipse 80% 60% at top, rgba(201, 168, 92, 0.06), transparent 70%),
+      radial-gradient(ellipse 60% 40% at bottom right, rgba(26, 50, 91, 0.5), transparent 60%),
+      var(--navy);
+    color: var(--cream);
+    min-height: 100vh;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+  .container { max-width: 1240px; margin: 0 auto; padding: 56px 32px 80px; }
+
+  /* HEADER */
+  header {
+    position: relative;
+    padding: 48px 0 56px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  .brand-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--cream);
+    margin-bottom: 36px;
+    letter-spacing: 0.3px;
+  }
+  h1.report-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: clamp(40px, 6vw, 68px);
+    line-height: 1.05;
+    letter-spacing: -1px;
+    color: var(--cream);
+    margin: 0 0 20px;
+  }
+  h1.report-title .accent {
+    color: var(--gold-bright);
+    font-style: italic;
+    font-weight: 500;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.6px;
+  }
+  .header-sub strong { color: var(--cream-soft); font-weight: 500; }
+  .date-pill {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    background: rgba(201, 168, 92, 0.06);
+    border: 1px solid var(--gold-soft);
+    color: var(--gold-bright);
+    padding: 10px 24px;
+    border-radius: 999px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+
+  /* ALERT */
+  .alert {
+    background: linear-gradient(180deg, rgba(201, 127, 127, 0.08), rgba(201, 127, 127, 0.02));
+    border: 1px solid rgba(201, 127, 127, 0.3);
+    border-left: 3px solid var(--bad);
+    border-radius: 6px;
+    padding: 16px 22px;
+    margin-bottom: 40px;
+    font-size: 13px;
+    color: #e0c4c4;
+    line-height: 1.6;
+  }
+  .alert strong { color: #f0d4d4; font-weight: 600; }
+
+  /* KPI GRID */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 56px;
+  }
+  .kpi {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: 8px;
+    padding: 24px 26px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .kpi:hover {
+    border-color: var(--gold-soft);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(201, 168, 92, 0.08);
+  }
+  .kpi:hover::before { opacity: 0.8; }
+  .kpi .label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2.2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .kpi .value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--cream);
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .kpi .value .currency {
+    font-size: 22px;
+    color: var(--gold-bright);
+    margin-right: 4px;
+    vertical-align: 6px;
+    font-weight: 500;
+  }
+  .kpi .value .cents {
+    font-size: 22px;
+    color: var(--muted);
+  }
+  .kpi .sub {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.3px;
+  }
+
+  /* SECTION TITLES */
+  .section-head {
+    margin: 56px 0 24px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .section-head h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--cream);
+    margin: 0;
+    letter-spacing: -0.3px;
+  }
+  .section-head h2 em {
+    color: var(--gold-bright);
+    font-style: italic;
+  }
+  .section-head .deco {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold-soft) 0%, transparent 100%);
+    margin: 0 12px;
+    min-width: 40px;
+    opacity: 0.4;
+  }
+  .section-head .meta {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  /* CHARTS */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: 8px;
+    padding: 28px;
+  }
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--cream);
+    margin: 0 0 4px;
+  }
+  .card-sub {
+    font-size: 11px;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+  .chart-wrapper {
+    position: relative;
+    height: 320px;
+  }
+
+  /* TABLE */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--navy-border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--navy-card);
+  }
+  th, td {
+    padding: 16px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  thead th {
+    color: var(--gold);
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: var(--navy-elev);
+    border-bottom: 1px solid var(--gold-soft);
+  }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tbody tr { transition: background 0.15s ease; }
+  tbody tr:hover td { background: rgba(201, 168, 92, 0.04); }
+  .campaign-name {
+    font-weight: 400;
+    color: var(--cream);
+    max-width: 280px;
+  }
+  .status-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: 1px solid;
+  }
+  .status-pill.not-delivering {
+    background: rgba(201, 168, 92, 0.1);
+    border-color: var(--gold-soft);
+    color: var(--gold-bright);
+  }
+  .status-pill.inactive {
+    background: rgba(138, 150, 170, 0.08);
+    border-color: rgba(138, 150, 170, 0.3);
+    color: var(--muted);
+  }
+
+  /* FILTERS */
+  .filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    background: transparent;
+    color: var(--cream-soft);
+    border: 1px solid var(--navy-border);
+    padding: 9px 20px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .filter-btn:hover {
+    border-color: var(--gold-soft);
+    color: var(--gold-bright);
+  }
+  .filter-btn.active {
+    background: var(--gold);
+    color: var(--navy-deep);
+    border-color: var(--gold);
+    font-weight: 600;
+  }
+
+  /* RESULTS BREAKDOWN */
+  .breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .breakdown-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: 8px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .breakdown-card::after {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, var(--gold-glow), transparent 70%);
+    pointer-events: none;
+  }
+  .breakdown-card .type {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .breakdown-card .qty {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 56px;
+    font-weight: 500;
+    color: var(--cream);
+    line-height: 1;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .breakdown-card .name {
+    font-size: 14px;
+    color: var(--cream-soft);
+    margin-bottom: 18px;
+    position: relative;
+  }
+  .breakdown-meta {
+    display: flex;
+    gap: 28px;
+    padding-top: 18px;
+    border-top: 1px solid var(--navy-border);
+    position: relative;
+  }
+  .breakdown-meta .item .lbl {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .breakdown-meta .item .val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    color: var(--cream);
+    font-weight: 500;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 64px;
+    padding-top: 32px;
+    border-top: 1px solid var(--navy-border);
+  }
+  footer .gold { color: var(--gold-bright); }
+
+  /* RESPONSIVE */
+
+  /* Large desktop ≤ 1200px — reduce padding */
+  @media (max-width: 1200px) {
+    .container { padding: 48px 28px 72px; }
+  }
+
+  /* Tablet landscape ≤ 1024px — 3-col KPIs */
+  @media (max-width: 1024px) {
+    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    h1.report-title { font-size: clamp(36px, 5.5vw, 58px); }
+    .kpi .value { font-size: 38px; }
+    .kpi .value .currency, .kpi .value .cents { font-size: 20px; }
+  }
+
+  /* Tablet portrait ≤ 900px — 2-col KPIs, single col charts */
+  @media (max-width: 900px) {
+    .container { padding: 40px 24px 64px; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .two-col, .breakdown-grid { grid-template-columns: 1fr; }
+    .date-pill {
+      position: static;
+      display: inline-block;
+      margin-bottom: 28px;
+      font-size: 11px;
+      padding: 8px 18px;
+    }
+    header { padding: 16px 0 40px; margin-bottom: 24px; }
+    .brand-name { margin-bottom: 28px; font-size: 20px; }
+    h1.report-title { font-size: clamp(34px, 7vw, 50px); line-height: 1.08; }
+    .section-head { margin: 44px 0 20px; }
+    .section-head h2 { font-size: 28px; }
+    .section-head .deco { min-width: 20px; }
+    .card { padding: 22px; }
+    .chart-wrapper { height: 280px; }
+    .breakdown-card { padding: 24px; }
+    .breakdown-card .qty { font-size: 48px; }
+    .breakdown-meta { gap: 20px; }
+    .breakdown-meta .item .val { font-size: 20px; }
+  }
+
+  /* Mobile large ≤ 640px — table becomes cards */
+  @media (max-width: 640px) {
+    .container { padding: 32px 18px 56px; }
+    .eyebrow { font-size: 10px; letter-spacing: 2.8px; }
+    .brand-name { font-size: 18px; margin-bottom: 24px; }
+    h1.report-title { font-size: clamp(30px, 8vw, 42px); }
+    .header-sub { font-size: 12px; }
+    .alert { padding: 14px 16px; font-size: 12.5px; margin-bottom: 32px; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 40px; }
+    .kpi { padding: 18px 18px; }
+    .kpi .label { font-size: 9px; letter-spacing: 1.8px; margin-bottom: 10px; }
+    .kpi .value { font-size: 32px; }
+    .kpi .value .currency, .kpi .value .cents { font-size: 16px; vertical-align: 4px; }
+    .kpi .sub { font-size: 11px; }
+    .section-head { margin: 40px 0 18px; gap: 12px; }
+    .section-head h2 { font-size: 24px; }
+    .section-head .meta { font-size: 10px; letter-spacing: 1.5px; }
+    .section-head .deco { display: none; }
+    .card { padding: 18px; }
+    .card-title { font-size: 18px; }
+    .card-sub { font-size: 10px; letter-spacing: 1.5px; margin-bottom: 16px; }
+    .chart-wrapper { height: 240px; }
+    .filter-bar { gap: 8px; }
+    .filter-btn { padding: 7px 14px; font-size: 10px; letter-spacing: 1px; }
+
+    /* Convert table to cards */
+    .table-wrap { border: none; overflow: visible; background: transparent; }
+    table, thead, tbody, tr, td { display: block; width: 100%; }
+    table { background: transparent; }
+    thead { display: none; }
+    tbody tr {
+      background: var(--navy-card);
+      border: 1px solid var(--navy-border);
+      border-radius: 8px;
+      margin-bottom: 12px;
+      padding: 16px 18px;
+    }
+    tbody tr:hover td { background: transparent; }
+    tbody td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--navy-border);
+      text-align: right;
+      font-size: 13px;
+    }
+    tbody td:last-child { border-bottom: none; }
+    tbody td::before {
+      content: attr(data-label);
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 500;
+      text-align: left;
+      flex: 0 0 auto;
+      margin-right: 12px;
+    }
+    tbody td.campaign-name {
+      display: block;
+      text-align: left;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      color: var(--cream);
+      padding: 0 0 12px;
+      border-bottom: 1px solid var(--gold-soft);
+      margin-bottom: 8px;
+      max-width: 100%;
+    }
+    tbody td.campaign-name::before { display: none; }
+    tbody td.num { font-variant-numeric: tabular-nums; }
+
+    .breakdown-card { padding: 22px; }
+    .breakdown-card .type { font-size: 9px; letter-spacing: 1.8px; }
+    .breakdown-card .qty { font-size: 44px; }
+    .breakdown-card .name { font-size: 13px; }
+    .breakdown-meta { flex-wrap: wrap; gap: 16px 24px; }
+    .breakdown-meta .item .val { font-size: 18px; }
+    footer { font-size: 10px; letter-spacing: 1.2px; margin-top: 48px; }
+  }
+
+  /* Mobile small ≤ 420px — single column KPIs */
+  @media (max-width: 420px) {
+    .container { padding: 28px 14px 48px; }
+    .kpi-grid { grid-template-columns: 1fr; gap: 10px; }
+    .kpi { padding: 18px 20px; }
+    .kpi .value { font-size: 36px; }
+    h1.report-title { font-size: clamp(28px, 9vw, 38px); }
+    .section-head h2 { font-size: 22px; }
+    .breakdown-card .qty { font-size: 40px; }
+    .chart-wrapper { height: 220px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="date-pill">29 Mai 2026 — 01 Jun 2026</div>
+    <div class="eyebrow">Relatório de Performance</div>
+    <div class="brand-name">Fabiana Pereira</div>
+    <h1 class="report-title">Campanhas de<br><span class="accent">Final de Semana</span></h1>
+    <div class="header-sub"><strong>3 campanhas com entrega</strong> · Meta Ads · Análise completa de resultados</div>
+  </header>
+
+  <div class="alert">
+    <strong>Conta com pendência financeira</strong> — O status atual da conta é <strong>UNSETTLED</strong> e as 3 campanhas ativas estão classificadas como <em>not_delivering</em>. A regularização da fatura no Gerenciador de Anúncios reativa a veiculação e libera o acesso completo via MCP.
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="label">Investimento Total</div>
+      <div class="value"><span class="currency">R$</span>362<span class="cents">,07</span></div>
+      <div class="sub">3 campanhas em veiculação</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Total de Resultados</div>
+      <div class="value">11</div>
+      <div class="sub">10 conversas + 1 compra</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Custo Médio / Resultado</div>
+      <div class="value"><span class="currency">R$</span>32<span class="cents">,92</span></div>
+      <div class="sub">Média ponderada</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Alcance Total</div>
+      <div class="value">8.023</div>
+      <div class="sub">Frequência média 1,48</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Impressões</div>
+      <div class="value">11.905</div>
+      <div class="sub">CPM médio R$ 30,41</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Cliques no Link</div>
+      <div class="value">87</div>
+      <div class="sub">CTR link 0,73%</div>
+    </div>
+    <div class="kpi">
+      <div class="label">CPC Link Médio</div>
+      <div class="value"><span class="currency">R$</span>4<span class="cents">,16</span></div>
+      <div class="sub">Custo por clique no link</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Cliques (Todos)</div>
+      <div class="value">212</div>
+      <div class="sub">CTR geral 1,78%</div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <h2>Análise <em>Visual</em></h2>
+    <div class="deco"></div>
+    <div class="meta">Gráficos · 03 Campanhas</div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Investimento por Campanha</div>
+      <div class="card-sub">Distribuição de Gasto · BRL</div>
+      <div class="chart-wrapper"><canvas id="spendChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Custo por Resultado</div>
+      <div class="card-sub">Eficiência · BRL por Conversão</div>
+      <div class="chart-wrapper"><canvas id="cprChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <h2>Performance <em>Detalhada</em></h2>
+    <div class="deco"></div>
+    <div class="meta" id="campaignCount">3 Campanhas</div>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="active">Com Entrega · 3</button>
+    <button class="filter-btn" data-filter="all">Todas as Campanhas</button>
+  </div>
+
+  <div class="table-wrap">
+    <table id="campaignTable">
+      <thead>
+        <tr>
+          <th>Campanha</th>
+          <th>Status</th>
+          <th class="num">Gasto</th>
+          <th class="num">Result.</th>
+          <th class="num">CPR</th>
+          <th class="num">Impressões</th>
+          <th class="num">Alcance</th>
+          <th class="num">CPM</th>
+          <th class="num">Cliques</th>
+          <th class="num">CTR</th>
+          <th class="num">CPC</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="section-head">
+    <h2>Resultados por <em>Tipo</em></h2>
+    <div class="deco"></div>
+    <div class="meta">Conversões Segmentadas</div>
+  </div>
+
+  <div class="breakdown-grid">
+    <div class="breakdown-card">
+      <div class="type">Conversas Iniciadas</div>
+      <div class="qty">10</div>
+      <div class="name">Messenger · Janela de 7 dias</div>
+      <div class="breakdown-meta">
+        <div class="item">
+          <div class="lbl">Custo Total</div>
+          <div class="val">R$ 192,95</div>
+        </div>
+        <div class="item">
+          <div class="lbl">Custo Médio</div>
+          <div class="val">R$ 19,30</div>
+        </div>
+        <div class="item">
+          <div class="lbl">Campanhas</div>
+          <div class="val">2</div>
+        </div>
+      </div>
+    </div>
+    <div class="breakdown-card">
+      <div class="type">Compras</div>
+      <div class="qty">1</div>
+      <div class="name">Pixel · Conversão de Curso</div>
+      <div class="breakdown-meta">
+        <div class="item">
+          <div class="lbl">Custo Total</div>
+          <div class="val">R$ 169,12</div>
+        </div>
+        <div class="item">
+          <div class="lbl">Custo Médio</div>
+          <div class="val">R$ 169,12</div>
+        </div>
+        <div class="item">
+          <div class="lbl">Campanha</div>
+          <div class="val">1</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Gerado a partir do CSV do Meta Ads Manager · <span class="gold">01 de Junho de 2026</span>
+  </footer>
+</div>
+
+<script>
+  const campaigns = [
+    { name: "25. [DIRECT] [ABO] [PROCEDIMENTO] [02/03/26]", status: "not_delivering", spend: 110.01, results: 8, cpr: 13.75, impressions: 6177, reach: 4358, cpm: 17.81, linkClicks: 32, linkCtr: 0.5181, linkCpc: 3.44 },
+    { name: "35. [WHATSAPP] [ABO] [PROCEDIMENTO] [26/05/26]", status: "not_delivering", spend: 82.94, results: 2, cpr: 41.47, impressions: 2952, reach: 1902, cpm: 28.10, linkClicks: 12, linkCtr: 0.4065, linkCpc: 6.91 },
+    { name: "36. [VENDAS] [CBO] [CURSO] [27/05/26]", status: "not_delivering", spend: 169.12, results: 1, cpr: 169.12, impressions: 2776, reach: 1763, cpm: 60.92, linkClicks: 43, linkCtr: 1.5490, linkCpc: 3.93 }
+  ];
+
+  const inactiveCampaigns = [
+    "05. [FORMULÁRIO] [CBO] [PROCEDIMENTO] [20/03/25]","15. [MENSAGENS] [ABO] [PROCEDIMENTO] [10/10/25]","16. [FORMULÁRIO] [CBO] [CURSO] [10/10/25]",
+    "17. [FORMULÁRIO] [CBO] [CURSO] [26/11/25]","18. [RECONHECIMENTO] [CBO] [CURSO] [26/11/25]","19. [FORMULÁRIO] [ABO] [PROCEDIMENTO] [13/01/26]",
+    "20. [SEGUIDORES] [CBO] [CURSO] [14/01/26]","21. [FORMULÁRIO] [CBO] [CURSO] [16/01/26]","22. [FORMULÁRIO] [CBO] [PRÉ-INSCRIÇÃO] [16/01/26]",
+    "23. [FORMULÁRIO] [ABO] [MICRO LABIAL] [19/01/26]","24. [DIRECT] [ABO] [PROCEDIMENTO] [22/01/26]","26. [DIRECT] [ABO] [CURSO] [02/03/26]",
+    "27. [WHATSAPP] [ABO] [PROCEDIMENTO] [12/03/26]","28. [WHATSAPP] [ABO] [CURSO] [12/03/26] - CHPO","29. [WHATSAPP] [ABO] [CURSO] [12/03/26] - FLPA",
+    "30. [WHATSAPP] [ABO] [CURSO] [12/03/26] - SPLO","31. [FORMULÁRIO] [CBO] [CURSO] [29/03/26] - CH","32. [FORMULÁRIO] [CBO] [CURSO] [29/03/26] - FL",
+    "33. [FORMULÁRIO] [CBO] [CURSO] [29/03/26] - SP","34. [FORMULÁRIO] [ABO] [PROC.] [29/03/26] - 3C","27. [VENDAS] [CBO] [CURSO] [22/05/26]",
+    "28. [WHATSAPP] [ABO] [PROCEDIMENTO] [25/05/26]","WC - [CB] [VENDA] [QUENTE]","WC - [CB] [VENDA] [FRIO]",
+    "[CP1] [FORMULÁRIO] - GERAR LEADS","[CP2] [MENSAGENS] - GERAR LEADS","[CP3] [FORMULÁRIO] - GERAR LEADS",
+    "[CP4] [MENSAGENS] - GERAR LEADS","[CP6] [MENSAGENS] - GERAR LEADS - SC","[CP7] [MENSAGENS] - GERAR LEADS - SP",
+    "[CP8] [MENSAGENS] - GERAR LEADS - SC IG","[CP7] [MENSAGENS] - GERAR LEADS - SP IG","[CP9] [FORMULÁRIO] - GERAR LEADS - SP",
+    "[CP10] [FORMULÁRIO] - GERAR LEADS - PR","[CP5] [FORMULÁRIO] - GERAR LEADS - SC","[CP11] [FORMULÁRIO] - GERAR LEADS",
+    "[CP6] [FORMULÁRIO] - GERAR LEADS - BS","12. [DIRECT] [ABO] [PROCEDIMENTO] [23/09/25]","13. [ALCANCE] [ABO] [PROCEDIMENTO] [26/09/25]",
+    "14. [MENSAGENS] [ABO] [CURSO] [04/10/25]"
+  ];
+
+  const fmtBRL = v => v == null ? '—' : v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+  const fmtNum = v => v == null ? '—' : v.toLocaleString('pt-BR');
+  const fmtPct = v => v == null ? '—' : v.toFixed(2) + '%';
+
+  function renderTable(filter) {
+    const tbody = document.querySelector('#campaignTable tbody');
+    const countEl = document.getElementById('campaignCount');
+    tbody.innerHTML = '';
+
+    let rows = campaigns.map(c => ({ ...c, isActive: true }));
+    if (filter === 'all') {
+      rows = rows.concat(inactiveCampaigns.map(n => ({ name: n, status: 'inactive', isActive: false })));
+    }
+    countEl.textContent = `${rows.length} Campanha${rows.length === 1 ? '' : 's'}`;
+
+    rows.forEach(c => {
+      const tr = document.createElement('tr');
+      const statusClass = c.status === 'not_delivering' ? 'not-delivering' : 'inactive';
+      const statusLabel = c.status === 'not_delivering' ? 'Não Entregando' : 'Inativa';
+      tr.innerHTML = `
+        <td class="campaign-name">${c.name}</td>
+        <td data-label="Status"><span class="status-pill ${statusClass}">${statusLabel}</span></td>
+        <td class="num" data-label="Gasto">${c.isActive ? fmtBRL(c.spend) : 'R$ 0,00'}</td>
+        <td class="num" data-label="Resultados">${c.isActive ? c.results : '0'}</td>
+        <td class="num" data-label="CPR">${c.isActive ? fmtBRL(c.cpr) : '—'}</td>
+        <td class="num" data-label="Impressões">${c.isActive ? fmtNum(c.impressions) : '0'}</td>
+        <td class="num" data-label="Alcance">${c.isActive ? fmtNum(c.reach) : '0'}</td>
+        <td class="num" data-label="CPM">${c.isActive ? fmtBRL(c.cpm) : '—'}</td>
+        <td class="num" data-label="Cliques">${c.isActive ? c.linkClicks : '0'}</td>
+        <td class="num" data-label="CTR">${c.isActive ? fmtPct(c.linkCtr) : '—'}</td>
+        <td class="num" data-label="CPC">${c.isActive ? fmtBRL(c.linkCpc) : '—'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTable(btn.dataset.filter);
+    });
+  });
+  renderTable('active');
+
+  // CHART PALETTE — navy + gold
+  const GOLD = '#c9a85c';
+  const GOLD_BRIGHT = '#e0bf72';
+  const GOLD_SOFT = '#a88940';
+  const CREAM = '#ede2cd';
+  const MUTED = '#8a96aa';
+  const BORDER = '#1f3a68';
+  const NAVY_DEEP = '#081428';
+
+  const chartCommon = {
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: NAVY_DEEP,
+        borderColor: GOLD_SOFT,
+        borderWidth: 1,
+        padding: 12,
+        titleColor: GOLD_BRIGHT,
+        bodyColor: CREAM,
+        titleFont: { family: 'Inter', size: 11, weight: '500' },
+        bodyFont: { family: 'Inter', size: 13 },
+        displayColors: false
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: MUTED, font: { family: 'Inter', size: 10 } },
+        grid: { color: 'rgba(201, 168, 92, 0.05)' },
+        border: { color: BORDER }
+      },
+      y: {
+        ticks: { color: MUTED, font: { family: 'Inter', size: 10 } },
+        grid: { color: 'rgba(201, 168, 92, 0.05)' },
+        border: { color: BORDER },
+        beginAtZero: true
+      }
+    }
+  };
+
+  const shortName = n => n.split(' ').slice(0, 2).join(' ').replace(/[\[\]]/g, '');
+
+  const goldGradient = (ctx, area) => {
+    const g = ctx.createLinearGradient(0, area.top, 0, area.bottom);
+    g.addColorStop(0, GOLD_BRIGHT);
+    g.addColorStop(1, 'rgba(201, 168, 92, 0.25)');
+    return g;
+  };
+
+  new Chart(document.getElementById('spendChart'), {
+    type: 'bar',
+    data: {
+      labels: campaigns.map(c => shortName(c.name)),
+      datasets: [{
+        data: campaigns.map(c => c.spend),
+        backgroundColor: ctx => {
+          const { chart } = ctx;
+          const { ctx: c, chartArea } = chart;
+          if (!chartArea) return GOLD;
+          return goldGradient(c, chartArea);
+        },
+        borderColor: GOLD_BRIGHT,
+        borderWidth: 1,
+        borderRadius: 4,
+        barThickness: 60
+      }]
+    },
+    options: {
+      ...chartCommon,
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        ...chartCommon.plugins,
+        tooltip: {
+          ...chartCommon.plugins.tooltip,
+          callbacks: { label: ctx => 'Investimento: ' + fmtBRL(ctx.parsed.y) }
+        }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('cprChart'), {
+    type: 'bar',
+    data: {
+      labels: campaigns.map(c => shortName(c.name)),
+      datasets: [{
+        data: campaigns.map(c => c.cpr),
+        backgroundColor: ctx => {
+          const { chart } = ctx;
+          const { ctx: c, chartArea } = chart;
+          if (!chartArea) return GOLD;
+          return goldGradient(c, chartArea);
+        },
+        borderColor: GOLD_BRIGHT,
+        borderWidth: 1,
+        borderRadius: 4,
+        barThickness: 60
+      }]
+    },
+    options: {
+      ...chartCommon,
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        ...chartCommon.plugins,
+        tooltip: {
+          ...chartCommon.plugins.tooltip,
+          callbacks: { label: ctx => 'Custo / Resultado: ' + fmtBRL(ctx.parsed.y) }
+        }
+      }
+    }
+  });
+</script>
+</body>
+</html>
